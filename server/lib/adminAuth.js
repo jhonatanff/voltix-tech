@@ -27,32 +27,3 @@ export function requireAdmin(req, res, next) {
     res.status(401).json({ error: 'Sesión expirada o inválida.' });
   }
 }
-
-// Freno simple de fuerza bruta: bloquea un IP tras varios intentos fallidos seguidos.
-// No sobrevive a un cold start — solo busca frenar intentos casuales, no ser un WAF.
-const failedAttempts = new Map();
-const MAX_ATTEMPTS = 8;
-const WINDOW_MS = 10 * 60 * 1000;
-
-export function isRateLimited(ip) {
-  const entry = failedAttempts.get(ip);
-  if (!entry) return false;
-  if (Date.now() - entry.since > WINDOW_MS) {
-    failedAttempts.delete(ip);
-    return false;
-  }
-  return entry.count >= MAX_ATTEMPTS;
-}
-
-export function registerFailedAttempt(ip) {
-  const entry = failedAttempts.get(ip);
-  if (!entry || Date.now() - entry.since > WINDOW_MS) {
-    failedAttempts.set(ip, { count: 1, since: Date.now() });
-  } else {
-    entry.count += 1;
-  }
-}
-
-export function clearFailedAttempts(ip) {
-  failedAttempts.delete(ip);
-}

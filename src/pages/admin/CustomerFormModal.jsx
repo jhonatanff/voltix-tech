@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import PasswordInput from '../../components/PasswordInput';
 import { adminFetchJSON } from '../../admin/api.js';
+import { useModalA11y } from '../../hooks/useModalA11y';
 
 export default function CustomerFormModal({ customer, onClose, onSaved }) {
   const isEditing = Boolean(customer);
@@ -10,6 +11,7 @@ export default function CustomerFormModal({ customer, onClose, onSaved }) {
   const [password, setPassword] = useState('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const modalRef = useModalA11y(true, onClose);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -48,10 +50,10 @@ export default function CustomerFormModal({ customer, onClose, onSaved }) {
 
   return (
     <div className="modal-overlay open" onClick={(e) => e.target === e.currentTarget && onClose()}>
-      <div className="modal" id="customer-form-modal">
+      <div className="modal" id="customer-form-modal" ref={modalRef} tabIndex={-1}>
         <div className="modal-header">
           <h2>{isEditing ? 'Editar usuario' : 'Nuevo usuario'}</h2>
-          <button className="cart-close-btn" onClick={onClose} id="customer-form-close-btn" type="button">×</button>
+          <button className="cart-close-btn" onClick={onClose} id="customer-form-close-btn" type="button" aria-label="Cerrar">×</button>
         </div>
 
         <form onSubmit={handleSubmit}>

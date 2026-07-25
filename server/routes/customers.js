@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import { pool } from '../lib/db.js';
 import { signCustomerToken, requireCustomer } from '../lib/customerAuth.js';
 import { fetchOrdersWithItems } from '../lib/orderSerializer.js';
+import { isRateLimited, registerFailedAttempt, clearFailedAttempts, clientIp } from '../lib/rateLimit.js';
 
 const router = Router();
 
@@ -39,6 +40,11 @@ router.post('/register', async (req, res) => {
 
 // POST /api/customers/login
 router.post('/login', async (req, res) => {
+  const ip = clientIp(req);
+  if (await isRateLimited('customer', ip)) {
+    return res.status(429).json({ error: 'Demasiados intentos fallidos. Intenta de nuevo más tarde.' });
+  }
+
   const { email, password } = req.body || {};
 
   if (!email?.trim() || !password) {
@@ -53,9 +59,11 @@ router.post('/login', async (req, res) => {
   const customer = rows[0];
 
   if (!customer || !bcrypt.compareSync(password, customer.password_hash)) {
+    await registerFailedAttempt('customer', ip);
     return res.status(401).json({ error: 'Correo o contraseña incorrectos.' });
   }
 
+  await clearFailedAttempts('customer', ip);
   res.json({ token: signCustomerToken(customer.id), user: toPublicCustomer(customer) });
 });
 

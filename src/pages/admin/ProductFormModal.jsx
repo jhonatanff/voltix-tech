@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { CATEGORIES } from '../../config';
 import { adminFetch, adminFetchJSON } from '../../admin/api.js';
+import { useModalA11y } from '../../hooks/useModalA11y';
 
 const CATEGORY_OPTIONS = CATEGORIES.filter((c) => c.id !== 'todos');
 
@@ -40,6 +41,7 @@ export default function ProductFormModal({ product, onClose, onSaved }) {
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const modalRef = useModalA11y(true, onClose);
 
   const setField = (key, value) => setForm((f) => ({ ...f, [key]: value }));
 
@@ -145,10 +147,10 @@ export default function ProductFormModal({ product, onClose, onSaved }) {
 
   return (
     <div className="modal-overlay open" onClick={(e) => e.target === e.currentTarget && onClose()}>
-      <div className="modal admin-product-modal" id="product-form-modal">
+      <div className="modal admin-product-modal" id="product-form-modal" ref={modalRef} tabIndex={-1}>
         <div className="modal-header">
           <h2>{isEditing ? 'Editar producto' : 'Nuevo producto'}</h2>
-          <button className="cart-close-btn" onClick={onClose} id="product-form-close-btn" type="button">×</button>
+          <button className="cart-close-btn" onClick={onClose} id="product-form-close-btn" type="button" aria-label="Cerrar">×</button>
         </div>
 
         <form onSubmit={handleSubmit}>

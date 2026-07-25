@@ -1,4 +1,5 @@
 import express from 'express';
+import helmet from 'helmet';
 import { ensureSchema } from './lib/db.js';
 import productsRouter from './routes/products.js';
 import ordersRouter from './routes/orders.js';
@@ -7,6 +8,9 @@ import customersRouter from './routes/customers.js';
 import adminCustomersRouter from './routes/adminCustomers.js';
 
 const app = express();
+
+// API pura en JSON — sin CSP (es para páginas HTML, no aplica aquí).
+app.use(helmet({ contentSecurityPolicy: false }));
 
 app.use(async (req, res, next) => {
   try {

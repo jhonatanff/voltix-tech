@@ -14,6 +14,7 @@ import {
   getWhatsAppURL,
 } from './config';
 import { useProducts } from './hooks/useProducts';
+import { useModalA11y } from './hooks/useModalA11y';
 import { useAuth } from './auth/AuthContext';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
@@ -163,23 +164,29 @@ function Navbar({ cartCount, onCartClick, user, onLogout }) {
         <div className="navbar-actions">
           {user ? (
             onOrdersPage ? (
-              <Link to="/" className="account-pill" id="home-nav-link">
+              <Link to="/" className="account-pill" id="home-nav-link" aria-label="Inicio">
                 <IconHome />
                 <span>Inicio</span>
               </Link>
             ) : (
-              <Link to="/mis-pedidos" className="account-pill" id="my-orders-link" title={`Hola, ${user?.name?.split(' ')[0]}`}>
+              <Link
+                to="/mis-pedidos"
+                className="account-pill"
+                id="my-orders-link"
+                title={`Hola, ${user?.name?.split(' ')[0]}`}
+                aria-label="Mis pedidos"
+              >
                 <IconUser />
                 <span>Mis pedidos</span>
               </Link>
             )
           ) : (
-            <Link to="/login" className="account-pill" id="login-nav-link">
+            <Link to="/login" className="account-pill" id="login-nav-link" aria-label="Iniciar sesión">
               <IconUser />
               <span>Iniciar sesión</span>
             </Link>
           )}
-          <button className="cart-btn" onClick={onCartClick} id="cart-toggle-btn">
+          <button className="cart-btn" onClick={onCartClick} id="cart-toggle-btn" aria-label="Carrito">
             <IconCart />
             <span>Carrito</span>
             {cartCount > 0 && (
@@ -187,7 +194,7 @@ function Navbar({ cartCount, onCartClick, user, onLogout }) {
             )}
           </button>
           {user && (
-            <button className="account-logout-btn" onClick={onLogout} id="logout-btn">
+            <button className="account-logout-btn" onClick={onLogout} id="logout-btn" aria-label="Salir">
               <IconLogout />
               <span>Salir</span>
             </button>
@@ -470,6 +477,7 @@ function ProductDetailPage({ products, productsLoading, onAddToCart }) {
                     className="qty-btn"
                     onClick={() => setQuantity((q) => Math.max(1, q - 1))}
                     id="detail-qty-minus"
+                    aria-label="Reducir cantidad"
                   >
                     <IconMinus />
                   </button>
@@ -479,6 +487,7 @@ function ProductDetailPage({ products, productsLoading, onAddToCart }) {
                     className="qty-btn"
                     onClick={() => setQuantity((q) => q + 1)}
                     id="detail-qty-plus"
+                    aria-label="Aumentar cantidad"
                   >
                     <IconPlus />
                   </button>
@@ -547,14 +556,14 @@ function CartItem({ item, onUpdateQty, onRemove }) {
         <div className="cart-item-name">{item.shortName}</div>
         <div className="cart-item-price">{formatPrice(item.price * item.quantity)}</div>
         <div className="cart-item-controls">
-          <button className="qty-btn" onClick={() => onUpdateQty(item.id, -1)} id={`qty-minus-${item.id}`}>
+          <button className="qty-btn" onClick={() => onUpdateQty(item.id, -1)} id={`qty-minus-${item.id}`} aria-label="Reducir cantidad">
             <IconMinus />
           </button>
           <span className="cart-item-qty">{item.quantity}</span>
-          <button className="qty-btn" onClick={() => onUpdateQty(item.id, 1)} id={`qty-plus-${item.id}`}>
+          <button className="qty-btn" onClick={() => onUpdateQty(item.id, 1)} id={`qty-plus-${item.id}`} aria-label="Aumentar cantidad">
             <IconPlus />
           </button>
-          <button className="cart-item-remove" onClick={() => onRemove(item.id)} id={`remove-${item.id}`}>
+          <button className="cart-item-remove" onClick={() => onRemove(item.id)} id={`remove-${item.id}`} aria-label={`Quitar ${item.shortName} del carrito`}>
             <IconTrash />
           </button>
         </div>
@@ -565,13 +574,15 @@ function CartItem({ item, onUpdateQty, onRemove }) {
 
 // ---- Cart Drawer ----
 function CartDrawer({ open, cart, subtotal, onClose, onUpdateQty, onRemove, onCheckout }) {
+  const drawerRef = useModalA11y(open, onClose);
+
   return (
     <>
       <div className={`cart-overlay ${open ? 'open' : ''}`} onClick={onClose}></div>
-      <aside className={`cart-drawer ${open ? 'open' : ''}`} id="cart-drawer">
+      <aside className={`cart-drawer ${open ? 'open' : ''}`} id="cart-drawer" ref={drawerRef} tabIndex={-1}>
         <div className="cart-header">
           <h2>🛒 Tu Carrito</h2>
-          <button className="cart-close-btn" onClick={onClose} id="cart-close-btn">
+          <button className="cart-close-btn" onClick={onClose} id="cart-close-btn" aria-label="Cerrar carrito">
             <IconX />
           </button>
         </div>
@@ -633,6 +644,7 @@ function CheckoutModal({ open, cart, subtotal, token, onClose, onOrderComplete }
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
+  const modalRef = useModalA11y(open, onClose);
 
   const shippingCost = shippingType === 'local' ? SHIPPING_COSTS.local : SHIPPING_COSTS.national;
   const total = subtotal + shippingCost;
@@ -733,10 +745,10 @@ function CheckoutModal({ open, cart, subtotal, token, onClose, onOrderComplete }
 
   return (
     <div className={`modal-overlay ${open ? 'open' : ''}`} onClick={(e) => e.target === e.currentTarget && onClose()}>
-      <div className="modal" id="checkout-modal">
+      <div className="modal" id="checkout-modal" ref={modalRef} tabIndex={-1}>
         <div className="modal-header">
           <h2>📋 Datos de Envío</h2>
-          <button className="cart-close-btn" onClick={onClose} id="modal-close-btn">
+          <button className="cart-close-btn" onClick={onClose} id="modal-close-btn" aria-label="Cerrar">
             <IconX />
           </button>
         </div>
@@ -1045,12 +1057,24 @@ function HomePage({ products, productsLoading, productsError, onAddToCart }) {
 // ============================
 // Main App Component
 // ============================
+const CART_STORAGE_KEY = 'voltix_cart';
+
+function loadStoredCart() {
+  try {
+    const raw = localStorage.getItem(CART_STORAGE_KEY);
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
 export default function App() {
   const { user, token, logout } = useAuth();
 
   const { products, loading: productsLoading, error: productsError, reload: reloadProducts } = useProducts();
 
-  const [cart, setCart] = useState([]);
+  const [cart, setCart] = useState(loadStoredCart);
   const [cartOpen, setCartOpen] = useState(false);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [toastMsg, setToastMsg] = useState('');
@@ -1111,6 +1135,11 @@ export default function App() {
       if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
     };
   }, []);
+
+  // Persistir el carrito para que no se pierda al recargar la página
+  useEffect(() => {
+    localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
+  }, [cart]);
 
   // Reabrir el checkout automáticamente tras iniciar sesión/registrarse (deshabilitado junto al gate)
   // useEffect(() => {

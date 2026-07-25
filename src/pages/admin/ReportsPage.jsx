@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { formatPrice, PAYMENT_METHODS, ORDER_STATUSES } from '../../config';
 import { adminFetch, adminFetchJSON } from '../../admin/api.js';
 import { toCSV, downloadCSV } from '../../admin/csv.js';
+import { useModalA11y } from '../../hooks/useModalA11y';
 
 function toDateInputValue(date) {
   return date.toISOString().slice(0, 10);
@@ -11,6 +12,7 @@ function OrderNoteModal({ order, onClose, onSaved }) {
   const [note, setNote] = useState(order.adminNote || '');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const modalRef = useModalA11y(true, onClose);
 
   const handleSave = async () => {
     setSaving(true);
@@ -27,10 +29,10 @@ function OrderNoteModal({ order, onClose, onSaved }) {
 
   return (
     <div className="modal-overlay open" onClick={(e) => e.target === e.currentTarget && onClose()}>
-      <div className="modal" id="order-note-modal">
+      <div className="modal" id="order-note-modal" ref={modalRef} tabIndex={-1}>
         <div className="modal-header">
           <h2>Nota del pedido #{order.id}</h2>
-          <button className="cart-close-btn" onClick={onClose} id="order-note-close-btn" type="button">×</button>
+          <button className="cart-close-btn" onClick={onClose} id="order-note-close-btn" type="button" aria-label="Cerrar">×</button>
         </div>
         <div className="modal-body">
           <div className="form-group">
@@ -178,6 +180,7 @@ export default function ReportsPage() {
                       value={o.status}
                       onChange={(e) => handleStatusChange(o.id, e.target.value)}
                       id={`order-status-${o.id}`}
+                      aria-label={`Estado del pedido #${o.id}`}
                     >
                       {ORDER_STATUSES.map((s) => (
                         <option key={s.id} value={s.id}>{s.label}</option>
@@ -190,6 +193,7 @@ export default function ReportsPage() {
                       onClick={() => setNoteOrder(o)}
                       id={`order-note-btn-${o.id}`}
                       type="button"
+                      aria-label={`${o.adminNote ? 'Ver nota' : 'Agregar nota'} del pedido #${o.id}`}
                     >
                       {o.adminNote ? 'Ver nota' : '+ Nota'}
                     </button>

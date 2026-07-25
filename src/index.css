@@ -1908,3 +1908,33 @@ a.account-pill:hover,
     display: none;
   }
 }
+
+/* ---- Error Boundary ---- */
+.error-boundary {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-lg);
+  background: var(--bg-primary);
+}
+
+.error-boundary-card {
+  max-width: 420px;
+  text-align: center;
+  background: var(--bg-card);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-lg);
+  padding: var(--space-2xl);
+}
+
+.error-boundary-card h1 {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  margin-bottom: var(--space-sm);
+}
+
+.error-boundary-card p {
+  color: var(--text-secondary);
+  margin-bottom: var(--space-lg);
+}

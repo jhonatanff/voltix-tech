@@ -1,24 +1,14 @@
 import { Router } from 'express';
 import { put } from '@vercel/blob';
-import {
-  verifyAdminCredentials,
-  signAdminToken,
-  requireAdmin,
-  isRateLimited,
-  registerFailedAttempt,
-  clearFailedAttempts,
-} from '../lib/adminAuth.js';
+import { verifyAdminCredentials, signAdminToken, requireAdmin } from '../lib/adminAuth.js';
+import { isRateLimited, registerFailedAttempt, clearFailedAttempts, clientIp } from '../lib/rateLimit.js';
 
 const router = Router();
 
-function clientIp(req) {
-  return req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket?.remoteAddress || 'unknown';
-}
-
 // POST /api/admin/login
-router.post('/login', (req, res) => {
+router.post('/login', async (req, res) => {
   const ip = clientIp(req);
-  if (isRateLimited(ip)) {
+  if (await isRateLimited('admin', ip)) {
     return res.status(429).json({ error: 'Demasiados intentos fallidos. Intenta de nuevo más tarde.' });
   }
 
@@ -28,11 +18,11 @@ router.post('/login', (req, res) => {
   }
 
   if (!verifyAdminCredentials(email, password)) {
-    registerFailedAttempt(ip);
+    await registerFailedAttempt('admin', ip);
     return res.status(401).json({ error: 'Correo o contraseña incorrectos.' });
   }
 
-  clearFailedAttempts(ip);
+  await clearFailedAttempts('admin', ip);
   res.json({ token: signAdminToken(), email: process.env.ADMIN_EMAIL });
 });
 

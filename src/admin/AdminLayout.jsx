@@ -49,13 +49,14 @@ export default function AdminLayout() {
               className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}
               id={item.id}
               title={item.label}
+              aria-label={item.label}
             >
               <span className="admin-nav-icon">{item.icon}</span>
               <span className="admin-nav-label">{item.label}</span>
             </NavLink>
           ))}
         </nav>
-        <button className="admin-logout-btn" onClick={logout} id="admin-logout-btn" title="Cerrar sesión">
+        <button className="admin-logout-btn" onClick={logout} id="admin-logout-btn" title="Cerrar sesión" aria-label="Cerrar sesión">
           <span className="admin-nav-icon">🚪</span>
           <span className="admin-nav-label">Cerrar sesión</span>
         </button>
