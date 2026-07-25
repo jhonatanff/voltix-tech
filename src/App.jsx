@@ -624,6 +624,7 @@ function CheckoutModal({ open, cart, subtotal, token, onClose, onOrderComplete }
   const [shippingType, setShippingType] = useState('local');
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
+  const [email, setEmail] = useState('');
   const [address, setAddress] = useState('');
   const [city, setCity] = useState(LOCAL_CITIES[0]);
   const [carrier, setCarrier] = useState(NATIONAL_CARRIERS[0]);
@@ -650,6 +651,12 @@ function CheckoutModal({ open, cart, subtotal, token, onClose, onOrderComplete }
       newErrors.phone = 'Ingresa tu teléfono';
     } else if (phoneDigits.length < 7 || phoneDigits.length > 10) {
       newErrors.phone = 'Ingresa un teléfono válido (7 a 10 dígitos)';
+    }
+
+    if (!email.trim()) {
+      newErrors.email = 'Ingresa tu correo electrónico';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      newErrors.email = 'Ingresa un correo electrónico válido';
     }
 
     if (!address.trim()) {
@@ -679,6 +686,7 @@ function CheckoutModal({ open, cart, subtotal, token, onClose, onOrderComplete }
           items: cart.map((item) => ({ productId: item.id, quantity: item.quantity })),
           customerName: name,
           customerPhone: phone,
+          customerEmail: email,
           shippingType,
           shippingCity: shippingType === 'local' ? city : null,
           shippingCarrier: shippingType === 'national' ? carrier : null,
@@ -760,6 +768,19 @@ function CheckoutModal({ open, cart, subtotal, token, onClose, onOrderComplete }
                 onChange={(e) => setPhone(e.target.value)}
               />
               {errors.phone && <div className="form-error">{errors.phone}</div>}
+            </div>
+
+            <div className="form-group">
+              <label className="form-label" htmlFor="customer-email">Correo electrónico *</label>
+              <input
+                id="customer-email"
+                className="form-input"
+                type="email"
+                placeholder="tucorreo@ejemplo.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+              {errors.email && <div className="form-error">{errors.email}</div>}
             </div>
 
             {/* Shipping Type */}

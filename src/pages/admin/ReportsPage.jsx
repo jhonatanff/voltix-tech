@@ -47,6 +47,7 @@ export default function ReportsPage() {
       { label: 'Fecha', value: (o) => new Date(o.createdAt).toLocaleString('es-CO') },
       { label: 'Cliente', value: (o) => o.customerName },
       { label: 'Teléfono', value: (o) => o.customerPhone },
+      { label: 'Correo', value: (o) => o.customerEmail || '' },
       { label: 'Productos', value: (o) => o.items.map((i) => `${i.productName} x${i.quantity}`).join('; ') },
       { label: 'Subtotal', value: (o) => o.subtotal },
       { label: 'Envío', value: (o) => o.shippingCost },
@@ -101,6 +102,7 @@ export default function ReportsPage() {
                 <th>#</th>
                 <th>Fecha</th>
                 <th>Cliente</th>
+                <th>Correo</th>
                 <th>Productos</th>
                 <th>Total</th>
                 <th>Pago</th>
@@ -113,6 +115,7 @@ export default function ReportsPage() {
                   <td>{o.id}</td>
                   <td>{new Date(o.createdAt).toLocaleDateString('es-CO')}</td>
                   <td>{o.customerName}</td>
+                  <td>{o.customerEmail || '—'}</td>
                   <td>{o.items.map((i) => `${i.productName} x${i.quantity}`).join(', ')}</td>
                   <td>{formatPrice(o.total)}</td>
                   <td>{paymentLabel(o.paymentMethod)}</td>

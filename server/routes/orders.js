@@ -26,6 +26,9 @@ router.post('/', attachCustomerIfPresent, async (req, res) => {
   if (!body.customerName?.trim() || !body.customerPhone?.trim()) {
     return res.status(400).json({ error: 'Nombre y teléfono son obligatorios.' });
   }
+  if (!body.customerEmail?.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(body.customerEmail.trim())) {
+    return res.status(400).json({ error: 'Ingresa un correo electrónico válido.' });
+  }
   if (!body.shippingAddress?.trim()) {
     return res.status(400).json({ error: 'La dirección de envío es obligatoria.' });
   }
@@ -64,12 +67,13 @@ router.post('/', attachCustomerIfPresent, async (req, res) => {
 
       const orderResult = await client.query(
         `INSERT INTO orders
-          (customer_name, customer_phone, shipping_type, shipping_city, shipping_carrier, shipping_address, payment_method, notes, subtotal, shipping_cost, total, customer_id)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
+          (customer_name, customer_phone, customer_email, shipping_type, shipping_city, shipping_carrier, shipping_address, payment_method, notes, subtotal, shipping_cost, total, customer_id)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
          RETURNING *`,
         [
           body.customerName.trim(),
           body.customerPhone.trim(),
+          body.customerEmail.trim().toLowerCase(),
           body.shippingType,
           body.shippingCity || null,
           body.shippingCarrier || null,

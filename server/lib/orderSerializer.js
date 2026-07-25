@@ -3,6 +3,7 @@ export function toOrder(orderRow, itemRows) {
     id: orderRow.id,
     customerName: orderRow.customer_name,
     customerPhone: orderRow.customer_phone,
+    customerEmail: orderRow.customer_email,
     shippingType: orderRow.shipping_type,
     shippingCity: orderRow.shipping_city,
     shippingCarrier: orderRow.shipping_carrier,
