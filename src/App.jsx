@@ -49,6 +49,30 @@ function IconMinus() {
   );
 }
 
+function IconUser() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" />
+    </svg>
+  );
+}
+
+function IconHome() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><path d="M9 22V12h6v10" />
+    </svg>
+  );
+}
+
+function IconLogout() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><path d="M16 17l5-5-5-5" /><path d="M21 12H9" />
+    </svg>
+  );
+}
+
 function IconX() {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
@@ -120,6 +144,8 @@ function Toast({ message, show }) {
 // ---- Navbar Component ----
 function Navbar({ cartCount, onCartClick, user, onLogout }) {
   const [scrolled, setScrolled] = useState(false);
+  const { pathname } = useLocation();
+  const onOrdersPage = pathname === '/mis-pedidos';
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -136,18 +162,21 @@ function Navbar({ cartCount, onCartClick, user, onLogout }) {
         </Link>
         <div className="navbar-actions">
           {user ? (
-            <div className="account-pill">
-              <span className="account-greeting">Hola, {user?.name?.split(' ')[0]}</span>
-              <Link to="/mis-pedidos" className="account-orders-link" id="my-orders-link">
-                Mis pedidos
+            onOrdersPage ? (
+              <Link to="/" className="account-pill" id="home-nav-link">
+                <IconHome />
+                <span>Inicio</span>
               </Link>
-              <button className="account-logout-btn" onClick={onLogout} id="logout-btn">
-                Salir
-              </button>
-            </div>
+            ) : (
+              <Link to="/mis-pedidos" className="account-pill" id="my-orders-link" title={`Hola, ${user?.name?.split(' ')[0]}`}>
+                <IconUser />
+                <span>Mis pedidos</span>
+              </Link>
+            )
           ) : (
             <Link to="/login" className="account-pill" id="login-nav-link">
-              Iniciar sesión
+              <IconUser />
+              <span>Iniciar sesión</span>
             </Link>
           )}
           <button className="cart-btn" onClick={onCartClick} id="cart-toggle-btn">
@@ -157,6 +186,12 @@ function Navbar({ cartCount, onCartClick, user, onLogout }) {
               <span className="cart-badge" key={cartCount}>{cartCount}</span>
             )}
           </button>
+          {user && (
+            <button className="account-logout-btn" onClick={onLogout} id="logout-btn">
+              <IconLogout />
+              <span>Salir</span>
+            </button>
+          )}
         </div>
       </div>
     </nav>

@@ -224,7 +224,8 @@ input, select, textarea {
   min-width: 0;
 }
 
-.account-pill {
+.account-pill,
+.account-logout-btn {
   display: flex;
   align-items: center;
   gap: var(--space-sm);
@@ -239,27 +240,17 @@ input, select, textarea {
   backdrop-filter: blur(10px);
 }
 
-a.account-pill:hover {
+a.account-pill:hover,
+.account-logout-btn:hover {
   background: var(--glass-hover);
   border-color: var(--border-hover);
   transform: translateY(-1px);
-}
-
-.account-greeting {
-  color: var(--text-secondary);
-}
-
-.account-logout-btn,
-.account-orders-link {
-  color: var(--accent-primary-light);
-  font-weight: 600;
-  font-size: 0.85rem;
-  transition: var(--transition-fast);
-}
-
-.account-logout-btn:hover,
-.account-orders-link:hover {
   color: var(--text-primary);
+}
+
+.account-logout-btn {
+  color: var(--accent-primary-light);
+  cursor: pointer;
 }
 
 /* ---- Order History (Mis Pedidos) ---- */
@@ -1834,13 +1825,10 @@ a.account-pill:hover {
     gap: var(--space-sm);
   }
 
-  .account-pill {
+  .account-pill,
+  .account-logout-btn {
     padding: 8px 14px;
     font-size: 0.8rem;
-  }
-
-  .account-greeting {
-    display: none;
   }
 
   .auth-card {
@@ -1878,13 +1866,14 @@ a.account-pill:hover {
     padding: 10px 14px;
   }
 
-  .account-pill {
-    gap: 6px;
-    padding: 6px 10px;
+  .account-pill,
+  .account-logout-btn {
+    gap: 0;
+    padding: 8px;
   }
 
-  .account-orders-link,
-  .account-logout-btn {
-    font-size: 0.72rem;
+  .account-pill > span,
+  .account-logout-btn > span {
+    display: none;
   }
 }
