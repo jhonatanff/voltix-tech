@@ -1141,6 +1141,44 @@ export default function App() {
     localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
   }, [cart]);
 
+  // Reconciliar el carrito restaurado de localStorage contra el catálogo real:
+  // precios/stock pueden haber cambiado, o el producto pudo eliminarse, desde
+  // la última visita.
+  useEffect(() => {
+    if (productsLoading || productsError) return;
+
+    setCart((prevCart) => {
+      if (prevCart.length === 0) return prevCart;
+
+      const removed = [];
+      const adjusted = [];
+      const next = [];
+
+      for (const item of prevCart) {
+        const live = products.find((p) => p.id === item.id);
+        if (!live || live.stock <= 0) {
+          removed.push(item.shortName || item.name);
+          continue;
+        }
+        const clampedQty = Math.min(item.quantity, live.stock);
+        if (clampedQty !== item.quantity) adjusted.push(item.shortName || item.name);
+        next.push({ ...live, quantity: clampedQty });
+      }
+
+      if (removed.length > 0) {
+        const isPlural = removed.length > 1;
+        showToast(
+          `${removed.join(', ')} ya no ${isPlural ? 'están disponibles' : 'está disponible'} y se ${isPlural ? 'quitaron' : 'quitó'} del carrito.`
+        );
+      } else if (adjusted.length > 0) {
+        showToast(`Se ajustó la cantidad de ${adjusted.join(', ')} por disponibilidad de stock.`);
+      }
+
+      return next;
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [products, productsLoading, productsError]);
+
   // Reabrir el checkout automáticamente tras iniciar sesión/registrarse (deshabilitado junto al gate)
   // useEffect(() => {
   //   if (location.state?.openCheckout) {
