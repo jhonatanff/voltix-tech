@@ -1,6 +1,6 @@
 // ========================================
 // Constantes compartidas entre el frontend (src/config.js)
-// y el backend (api/_app.js) — sin imports de Vite/assets,
+// y el backend (server/app.js) — sin imports de Vite/assets,
 // para poder usarse desde Node puro.
 // ========================================
 

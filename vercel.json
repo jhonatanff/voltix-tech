@@ -4,6 +4,7 @@
     { "source": "/api/products(.*)", "destination": "/api/index" },
     { "source": "/api/orders(.*)", "destination": "/api/index" },
     { "source": "/api/admin(.*)", "destination": "/api/index" },
+    { "source": "/api/customers(.*)", "destination": "/api/index" },
     { "source": "/((?!api/).*)", "destination": "/index.html" }
   ]
 }
