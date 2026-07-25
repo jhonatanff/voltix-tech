@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { pool, withTransaction } from '../lib/db.js';
 import { requireAdmin } from '../lib/adminAuth.js';
+import { notifyNewOrder } from '../lib/notify.js';
 import { SHIPPING_COSTS, PAYMENT_METHOD_IDS } from '../../shared/constants.js';
 
 const router = Router();
@@ -115,6 +116,10 @@ router.post('/', async (req, res) => {
       return toOrder(orderRow, itemRows);
     });
 
+    // Se espera antes de responder: en un runtime serverless, la ejecución
+    // puede congelarse justo después de enviar la respuesta, así que un
+    // "fire and forget" real no garantizaría que el correo salga.
+    await notifyNewOrder(order);
     res.status(201).json(order);
   } catch (err) {
     if (err instanceof InsufficientStockError) {
