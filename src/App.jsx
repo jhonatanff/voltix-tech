@@ -177,7 +177,7 @@ function Hero({ onCatalogClick }) {
           Tecnología <span className="gradient-text">Premium</span> al Mejor Precio
         </h1>
         <p className="hero-subtitle">
-          Descubre nuestra selección exclusiva de audífonos, cargadores y diademas de última generación. 
+          Descubre nuestra selección exclusiva de audífonos, cargadores y diademas de última generación.
           Calidad garantizada con envío directo a tu puerta.
         </p>
         <div className="hero-cta-group">
@@ -186,6 +186,9 @@ function Hero({ onCatalogClick }) {
           </button>
           <a href="#features" className="btn btn-secondary" id="hero-cta-benefits">
             ✨ Nuestros Beneficios
+          </a>
+          <a href="https://voltix-tech.vercel.app/admin/login" className="btn btn-secondary" id="hero-cta-benefits">
+            ✨ Login AdminApp
           </a>
         </div>
       </div>
@@ -217,8 +220,8 @@ function ProductCard({ product, onAddToCart }) {
     product.badge === 'Oferta'
       ? 'badge-orange'
       : product.badge === 'Nuevo'
-      ? 'badge-green'
-      : '';
+        ? 'badge-green'
+        : '';
 
   const categoryLabel = CATEGORIES.find((c) => c.id === product.category)?.label || product.category;
   const outOfStock = product.stock <= 0;
