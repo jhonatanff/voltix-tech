@@ -18,7 +18,6 @@ function AdminRoutes({ onProductsChanged }) {
     <Routes>
       <Route path="login" element={<AdminLoginPage />} />
       <Route
-        path=""
         element={
           <RequireAdmin>
             <AdminLayout />
