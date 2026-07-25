@@ -2,8 +2,7 @@
 // Voltix Tech — Main Application
 // ========================================
 import { useState, useEffect, useCallback, useRef, lazy, Suspense } from 'react';
-import { Routes, Route, Link, useParams, useLocation } from 'react-router-dom';
-// useNavigate: solo se usaba para el gate de login en checkout (deshabilitado)
+import { Routes, Route, Link, Navigate, useParams, useLocation } from 'react-router-dom';
 import {
   CATEGORIES,
   LOCAL_CITIES,
@@ -15,10 +14,10 @@ import {
   getWhatsAppURL,
 } from './config';
 import { useProducts } from './hooks/useProducts';
-// Auth deshabilitada temporalmente (requerimiento de login en checkout en pausa)
-// import { useAuth } from './auth/AuthContext';
-// import LoginPage from './pages/LoginPage';
-// import RegisterPage from './pages/RegisterPage';
+import { useAuth } from './auth/AuthContext';
+import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
+import OrderHistoryPage from './pages/OrderHistoryPage';
 import voltixLogo from './assets/voltix_logo.webp';
 import './index.css';
 
@@ -119,7 +118,6 @@ function Toast({ message, show }) {
 }
 
 // ---- Navbar Component ----
-// eslint-disable-next-line no-unused-vars -- user/onLogout quedan sin usar mientras la auth está deshabilitada
 function Navbar({ cartCount, onCartClick, user, onLogout }) {
   const [scrolled, setScrolled] = useState(false);
 
@@ -137,10 +135,12 @@ function Navbar({ cartCount, onCartClick, user, onLogout }) {
           <span className="navbar-title">Voltix Tech</span>
         </Link>
         <div className="navbar-actions">
-          {/* Auth deshabilitada temporalmente: UI de sesión (account-pill) en pausa
           {user ? (
             <div className="account-pill">
               <span className="account-greeting">Hola, {user?.name?.split(' ')[0]}</span>
+              <Link to="/mis-pedidos" className="account-orders-link" id="my-orders-link">
+                Mis pedidos
+              </Link>
               <button className="account-logout-btn" onClick={onLogout} id="logout-btn">
                 Salir
               </button>
@@ -150,7 +150,6 @@ function Navbar({ cartCount, onCartClick, user, onLogout }) {
               Iniciar sesión
             </Link>
           )}
-          */}
           <button className="cart-btn" onClick={onCartClick} id="cart-toggle-btn">
             <IconCart />
             <span>Carrito</span>
@@ -242,6 +241,11 @@ function ProductCard({ product, onAddToCart }) {
             <span key={f} className="product-feature-tag">{f}</span>
           ))}
         </div>
+        {!outOfStock && (
+          <span className="product-card-stock">
+            {product.stock <= 5 ? `¡Solo quedan ${product.stock}!` : `${product.stock} disponibles`}
+          </span>
+        )}
         <div className="product-card-footer">
           <div className="product-price-group">
             <span className="product-price">{formatPrice(product.price)}</span>
@@ -581,7 +585,7 @@ function CartDrawer({ open, cart, subtotal, onClose, onUpdateQty, onRemove, onCh
 }
 
 // ---- Checkout Modal ----
-function CheckoutModal({ open, cart, subtotal, onClose, onOrderComplete }) {
+function CheckoutModal({ open, cart, subtotal, token, onClose, onOrderComplete }) {
   const [shippingType, setShippingType] = useState('local');
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
@@ -632,7 +636,10 @@ function CheckoutModal({ open, cart, subtotal, onClose, onOrderComplete }) {
     try {
       const res = await fetch('/api/orders', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify({
           items: cart.map((item) => ({ productId: item.id, quantity: item.quantity })),
           customerName: name,
@@ -983,10 +990,7 @@ function HomePage({ products, productsLoading, productsError, onAddToCart }) {
 // Main App Component
 // ============================
 export default function App() {
-  // Auth deshabilitada temporalmente (requerimiento de login en checkout en pausa)
-  // const { user, isAuthenticated, logout } = useAuth();
-  // const navigate = useNavigate();
-  // const location = useLocation();
+  const { user, token, logout } = useAuth();
 
   const { products, loading: productsLoading, error: productsError, reload: reloadProducts } = useProducts();
 
@@ -1066,7 +1070,9 @@ export default function App() {
   return (
     <>
       <ScrollToTop />
-      {!isAdminRoute && <Navbar cartCount={cartCount} onCartClick={() => setCartOpen(true)} />}
+      {!isAdminRoute && (
+        <Navbar cartCount={cartCount} onCartClick={() => setCartOpen(true)} user={user} onLogout={logout} />
+      )}
 
       <Routes>
         <Route
@@ -1090,10 +1096,12 @@ export default function App() {
             />
           }
         />
-        {/* Rutas de auth deshabilitadas temporalmente
         <Route path="/login" element={<LoginPage />} />
         <Route path="/registro" element={<RegisterPage />} />
-        */}
+        <Route
+          path="/mis-pedidos"
+          element={user ? <OrderHistoryPage /> : <Navigate to="/login" state={{ from: 'pedidos' }} replace />}
+        />
         <Route
           path="/admin/*"
           element={
@@ -1124,6 +1132,7 @@ export default function App() {
             open={checkoutOpen}
             cart={cart}
             subtotal={subtotal}
+            token={token}
             onClose={() => setCheckoutOpen(false)}
             onOrderComplete={() => setCart([])}
           />

@@ -1,7 +1,9 @@
 import { Router } from 'express';
 import { pool, withTransaction } from '../lib/db.js';
 import { requireAdmin } from '../lib/adminAuth.js';
+import { attachCustomerIfPresent } from '../lib/customerAuth.js';
 import { notifyNewOrder } from '../lib/notify.js';
+import { toOrder, fetchOrdersWithItems } from '../lib/orderSerializer.js';
 import { SHIPPING_COSTS, PAYMENT_METHOD_IDS } from '../../shared/constants.js';
 
 const router = Router();
@@ -13,32 +15,10 @@ class InsufficientStockError extends Error {
   }
 }
 
-function toOrder(orderRow, itemRows) {
-  return {
-    id: orderRow.id,
-    customerName: orderRow.customer_name,
-    customerPhone: orderRow.customer_phone,
-    shippingType: orderRow.shipping_type,
-    shippingCity: orderRow.shipping_city,
-    shippingCarrier: orderRow.shipping_carrier,
-    shippingAddress: orderRow.shipping_address,
-    paymentMethod: orderRow.payment_method,
-    notes: orderRow.notes,
-    subtotal: orderRow.subtotal,
-    shippingCost: orderRow.shipping_cost,
-    total: orderRow.total,
-    createdAt: orderRow.created_at,
-    items: itemRows.map((i) => ({
-      productId: i.product_id,
-      productName: i.product_name,
-      unitPrice: i.unit_price,
-      quantity: i.quantity,
-    })),
-  };
-}
-
 // POST /api/orders — pública. Crea el pedido, descuenta stock de forma atómica.
-router.post('/', async (req, res) => {
+// Si viene un Bearer de cliente válido, el pedido queda vinculado a su cuenta;
+// si no (invitado), sigue funcionando exactamente igual que antes.
+router.post('/', attachCustomerIfPresent, async (req, res) => {
   const body = req.body || {};
   const items = Array.isArray(body.items) ? body.items : [];
 
@@ -84,8 +64,8 @@ router.post('/', async (req, res) => {
 
       const orderResult = await client.query(
         `INSERT INTO orders
-          (customer_name, customer_phone, shipping_type, shipping_city, shipping_carrier, shipping_address, payment_method, notes, subtotal, shipping_cost, total)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
+          (customer_name, customer_phone, shipping_type, shipping_city, shipping_carrier, shipping_address, payment_method, notes, subtotal, shipping_cost, total, customer_id)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
          RETURNING *`,
         [
           body.customerName.trim(),
@@ -99,6 +79,7 @@ router.post('/', async (req, res) => {
           subtotal,
           shippingCost,
           total,
+          req.customerId || null,
         ]
       );
       const orderRow = orderResult.rows[0];
@@ -148,26 +129,7 @@ router.get('/', requireAdmin, async (req, res) => {
   }
 
   const where = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
-  const { rows: orderRows } = await pool.query(
-    `SELECT * FROM orders ${where} ORDER BY created_at DESC`,
-    params
-  );
-
-  if (orderRows.length === 0) return res.json([]);
-
-  const orderIds = orderRows.map((o) => o.id);
-  const { rows: itemRows } = await pool.query(
-    'SELECT * FROM order_items WHERE order_id = ANY($1)',
-    [orderIds]
-  );
-
-  const itemsByOrder = new Map();
-  for (const item of itemRows) {
-    if (!itemsByOrder.has(item.order_id)) itemsByOrder.set(item.order_id, []);
-    itemsByOrder.get(item.order_id).push(item);
-  }
-
-  res.json(orderRows.map((o) => toOrder(o, itemsByOrder.get(o.id) || [])));
+  res.json(await fetchOrdersWithItems(pool, where, params));
 });
 
 export default router;

@@ -5,6 +5,8 @@ import AdminLoginPage from '../pages/admin/AdminLoginPage.jsx';
 import ProductsPage from '../pages/admin/ProductsPage.jsx';
 import SalesDashboardPage from '../pages/admin/SalesDashboardPage.jsx';
 import ReportsPage from '../pages/admin/ReportsPage.jsx';
+import TrashPage from '../pages/admin/TrashPage.jsx';
+import CustomersPage from '../pages/admin/CustomersPage.jsx';
 import '../admin/admin.css';
 
 function RequireAdmin({ children }) {
@@ -28,6 +30,8 @@ function AdminRoutes({ onProductsChanged }) {
         <Route path="productos" element={<ProductsPage onProductsChanged={onProductsChanged} />} />
         <Route path="ventas" element={<SalesDashboardPage />} />
         <Route path="reportes" element={<ReportsPage />} />
+        <Route path="papelera" element={<TrashPage onProductsChanged={onProductsChanged} />} />
+        <Route path="usuarios" element={<CustomersPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/admin" replace />} />
     </Routes>

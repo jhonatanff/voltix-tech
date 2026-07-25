@@ -1,5 +1,4 @@
 import { createContext, useContext, useState, useCallback } from 'react';
-import { API_URL } from '../config';
 
 const STORAGE_KEY = 'voltix_auth';
 const AuthContext = createContext(null);
@@ -14,7 +13,7 @@ function readStoredAuth() {
 }
 
 async function requestAuth(path, payload) {
-  const res = await fetch(`${API_URL}${path}`, {
+  const res = await fetch(path, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
@@ -46,13 +45,13 @@ export function AuthProvider({ children }) {
   };
 
   const register = useCallback(async ({ name, phone, email, password }) => {
-    const data = await requestAuth('/api/auth/register', { name, phone, email, password });
+    const data = await requestAuth('/api/customers/register', { name, phone, email, password });
     persist(data);
     return data;
   }, []);
 
   const login = useCallback(async ({ email, password }) => {
-    const data = await requestAuth('/api/auth/login', { email, password });
+    const data = await requestAuth('/api/customers/login', { email, password });
     persist(data);
     return data;
   }, []);

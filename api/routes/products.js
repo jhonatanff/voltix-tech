@@ -25,6 +25,7 @@ function toProduct(row) {
     stock: row.stock,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
+    deletedAt: row.deleted_at,
   };
 }
 
@@ -57,6 +58,25 @@ router.get('/', async (req, res) => {
     'SELECT * FROM products WHERE deleted_at IS NULL ORDER BY created_at ASC'
   );
   res.json(rows.map(toProduct));
+});
+
+// GET /api/products/trash — admin. Productos eliminados (soft-delete).
+// Debe ir antes de "/:id" para que Express no lo confunda con un id.
+router.get('/trash', requireAdmin, async (req, res) => {
+  const { rows } = await pool.query(
+    'SELECT * FROM products WHERE deleted_at IS NOT NULL ORDER BY deleted_at DESC'
+  );
+  res.json(rows.map(toProduct));
+});
+
+// POST /api/products/:id/restore — admin. Deshace un soft-delete.
+router.post('/:id/restore', requireAdmin, async (req, res) => {
+  const { rows } = await pool.query(
+    'UPDATE products SET deleted_at = NULL WHERE id = $1 AND deleted_at IS NOT NULL RETURNING *',
+    [req.params.id]
+  );
+  if (rows.length === 0) return res.status(404).json({ error: 'Producto no encontrado en la papelera.' });
+  res.json(toProduct(rows[0]));
 });
 
 // GET /api/products/:id — detalle público (excluye eliminados)

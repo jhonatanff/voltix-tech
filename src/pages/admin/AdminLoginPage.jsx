@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { useAdminAuth } from '../../admin/AdminAuthContext.jsx';
+import PasswordInput from '../../components/PasswordInput';
+import AuthBackground from '../../components/AuthBackground';
 
 export default function AdminLoginPage() {
   const { isAuthenticated, login } = useAdminAuth();
@@ -28,6 +30,7 @@ export default function AdminLoginPage() {
 
   return (
     <section className="auth-section admin-login-section">
+      <AuthBackground />
       <div className="container">
         <div className="auth-back-wrap">
           <Link to="/" className="back-link" id="admin-back-to-site">
@@ -53,10 +56,8 @@ export default function AdminLoginPage() {
             </div>
             <div className="form-group">
               <label className="form-label" htmlFor="admin-password">Contraseña</label>
-              <input
+              <PasswordInput
                 id="admin-password"
-                className="form-input"
-                type="password"
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}

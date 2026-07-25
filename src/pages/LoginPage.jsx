@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
+import PasswordInput from '../components/PasswordInput';
+import AuthBackground from '../components/AuthBackground';
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -29,6 +31,7 @@ export default function LoginPage() {
 
   return (
     <section className="auth-section">
+      <AuthBackground />
       <div className="container">
         <div className="auth-card">
           <h1 className="auth-title">Inicia sesión</h1>
@@ -54,10 +57,8 @@ export default function LoginPage() {
 
             <div className="form-group">
               <label className="form-label" htmlFor="login-password">Contraseña</label>
-              <input
+              <PasswordInput
                 id="login-password"
-                className="form-input"
-                type="password"
                 placeholder="••••••••"
                 required
                 value={password}

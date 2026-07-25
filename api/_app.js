@@ -3,6 +3,8 @@ import { ensureSchema } from './lib/db.js';
 import productsRouter from './routes/products.js';
 import ordersRouter from './routes/orders.js';
 import adminRouter from './routes/admin.js';
+import customersRouter from './routes/customers.js';
+import adminCustomersRouter from './routes/adminCustomers.js';
 
 const app = express();
 
@@ -23,6 +25,8 @@ app.use(express.json({ limit: '2mb' }));
 app.use('/api/products', productsRouter);
 app.use('/api/orders', ordersRouter);
 app.use('/api/admin', adminRouter);
+app.use('/api/customers', customersRouter);
+app.use('/api/admin/customers', adminCustomersRouter);
 
 app.get('/api/health', (req, res) => res.json({ ok: true }));
 

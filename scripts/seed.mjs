@@ -62,6 +62,16 @@ async function main() {
       deleted_at TIMESTAMPTZ
     );
     ALTER TABLE products ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ;
+    CREATE TABLE IF NOT EXISTS customers (
+      id SERIAL PRIMARY KEY,
+      name TEXT NOT NULL,
+      phone TEXT NOT NULL,
+      email TEXT NOT NULL UNIQUE,
+      password_hash TEXT NOT NULL,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+      deleted_at TIMESTAMPTZ
+    );
+    ALTER TABLE customers ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ;
     CREATE TABLE IF NOT EXISTS orders (
       id SERIAL PRIMARY KEY,
       customer_name TEXT NOT NULL,
@@ -75,9 +85,12 @@ async function main() {
       subtotal INTEGER NOT NULL,
       shipping_cost INTEGER NOT NULL,
       total INTEGER NOT NULL,
-      created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+      created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+      customer_id INTEGER REFERENCES customers(id) ON DELETE SET NULL
     );
+    ALTER TABLE orders ADD COLUMN IF NOT EXISTS customer_id INTEGER REFERENCES customers(id) ON DELETE SET NULL;
     CREATE INDEX IF NOT EXISTS orders_created_at_idx ON orders (created_at);
+    CREATE INDEX IF NOT EXISTS orders_customer_id_idx ON orders (customer_id);
     CREATE TABLE IF NOT EXISTS order_items (
       id SERIAL PRIMARY KEY,
       order_id INTEGER NOT NULL REFERENCES orders(id) ON DELETE CASCADE,

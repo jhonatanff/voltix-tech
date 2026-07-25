@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
+import PasswordInput from '../components/PasswordInput';
+import AuthBackground from '../components/AuthBackground';
 
 export default function RegisterPage() {
   const { register } = useAuth();
@@ -38,6 +40,7 @@ export default function RegisterPage() {
 
   return (
     <section className="auth-section">
+      <AuthBackground />
       <div className="container">
         <div className="auth-card">
           <h1 className="auth-title">Crea tu cuenta</h1>
@@ -89,10 +92,8 @@ export default function RegisterPage() {
 
             <div className="form-group">
               <label className="form-label" htmlFor="register-password">Contraseña</label>
-              <input
+              <PasswordInput
                 id="register-password"
-                className="form-input"
-                type="password"
                 placeholder="Mínimo 6 caracteres"
                 required
                 minLength={6}
@@ -103,10 +104,8 @@ export default function RegisterPage() {
 
             <div className="form-group">
               <label className="form-label" htmlFor="register-confirm-password">Confirmar contraseña</label>
-              <input
+              <PasswordInput
                 id="register-confirm-password"
-                className="form-input"
-                type="password"
                 placeholder="Repite tu contraseña"
                 required
                 minLength={6}
