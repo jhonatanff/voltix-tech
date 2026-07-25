@@ -69,7 +69,7 @@ router.post('/', async (req, res) => {
         }
         const { rows } = await client.query(
           `UPDATE products SET stock = stock - $1, updated_at = now()
-           WHERE id = $2 AND stock >= $1
+           WHERE id = $2 AND stock >= $1 AND deleted_at IS NULL
            RETURNING id, name, price`,
           [qty, productId]
         );

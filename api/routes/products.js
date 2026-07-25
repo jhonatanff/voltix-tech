@@ -51,15 +51,20 @@ function validateProductInput(body, { partial = false } = {}) {
   return errors;
 }
 
-// GET /api/products — catálogo público
+// GET /api/products — catálogo público (excluye eliminados)
 router.get('/', async (req, res) => {
-  const { rows } = await pool.query('SELECT * FROM products ORDER BY created_at ASC');
+  const { rows } = await pool.query(
+    'SELECT * FROM products WHERE deleted_at IS NULL ORDER BY created_at ASC'
+  );
   res.json(rows.map(toProduct));
 });
 
-// GET /api/products/:id — detalle público
+// GET /api/products/:id — detalle público (excluye eliminados)
 router.get('/:id', async (req, res) => {
-  const { rows } = await pool.query('SELECT * FROM products WHERE id = $1', [req.params.id]);
+  const { rows } = await pool.query(
+    'SELECT * FROM products WHERE id = $1 AND deleted_at IS NULL',
+    [req.params.id]
+  );
   if (rows.length === 0) return res.status(404).json({ error: 'Producto no encontrado.' });
   res.json(toProduct(rows[0]));
 });
@@ -139,9 +144,14 @@ router.put('/:id', requireAdmin, async (req, res) => {
   res.json(toProduct(rows[0]));
 });
 
-// DELETE /api/products/:id — eliminar (admin)
+// DELETE /api/products/:id — soft delete (admin): se marca deleted_at,
+// no se borra la fila. Deja de aparecer en la landing pero la conserva
+// para el historial de pedidos (order_items sigue apuntando a ella).
 router.delete('/:id', requireAdmin, async (req, res) => {
-  const { rows } = await pool.query('DELETE FROM products WHERE id = $1 RETURNING id', [req.params.id]);
+  const { rows } = await pool.query(
+    'UPDATE products SET deleted_at = now() WHERE id = $1 AND deleted_at IS NULL RETURNING id',
+    [req.params.id]
+  );
   if (rows.length === 0) return res.status(404).json({ error: 'Producto no encontrado.' });
   res.status(204).end();
 });
