@@ -2,10 +2,10 @@
 // Voltix Tech - Configuración Central
 // ========================================
 
-import airpodsBundleImg from './assets/airpods_bundle.png';
-import airpodsProImg from './assets/airpods_pro.png';
-import cargadorImg from './assets/cargador_gan.png';
-import diademaImg from './assets/diadema_gamer.png';
+import airpodsBundleImg from './assets/airpods_bundle.webp';
+import airpodsProImg from './assets/airpods_pro.webp';
+import cargadorImg from './assets/cargador_gan.webp';
+import diademaImg from './assets/diadema_gamer.webp';
 
 // Número de WhatsApp del comercio (formato internacional sin +)
 export const WHATSAPP_NUMBER = '573226590659';

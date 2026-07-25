@@ -19,7 +19,7 @@ import {
 // import { useAuth } from './auth/AuthContext';
 // import LoginPage from './pages/LoginPage';
 // import RegisterPage from './pages/RegisterPage';
-import voltixLogo from './assets/voltix_logo.png';
+import voltixLogo from './assets/voltix_logo.webp';
 import './index.css';
 
 // ---- SVG Icon Components ----
@@ -327,6 +327,15 @@ function ProductDetailPage({ onAddToCart }) {
       if (timerRef.current) clearTimeout(timerRef.current);
     };
   }, []);
+
+  useEffect(() => {
+    document.title = product
+      ? `${product.name} — Voltix Tech`
+      : 'Producto no encontrado — Voltix Tech';
+    return () => {
+      document.title = 'Voltix Tech — Tecnología Premium al Mejor Precio';
+    };
+  }, [product]);
 
   if (!product) return <ProductNotFound />;
 

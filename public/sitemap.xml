@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://voltix-tech.vercel.app/</loc>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://voltix-tech.vercel.app/producto/air-001</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://voltix-tech.vercel.app/producto/air-002</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://voltix-tech.vercel.app/producto/car-001</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://voltix-tech.vercel.app/producto/car-002</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://voltix-tech.vercel.app/producto/dia-001</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://voltix-tech.vercel.app/producto/dia-002</loc>
+    <priority>0.8</priority>
+  </url>
+</urlset>
