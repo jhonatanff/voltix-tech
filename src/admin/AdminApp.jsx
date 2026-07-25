@@ -29,7 +29,7 @@ function AdminRoutes({ onProductsChanged }) {
         <Route index element={<Navigate to="productos" replace />} />
         <Route path="productos" element={<ProductsPage onProductsChanged={onProductsChanged} />} />
         <Route path="ventas" element={<SalesDashboardPage />} />
-        <Route path="reportes" element={<ReportsPage />} />
+        <Route path="ordenes" element={<ReportsPage />} />
         <Route path="papelera" element={<TrashPage onProductsChanged={onProductsChanged} />} />
         <Route path="usuarios" element={<CustomersPage />} />
       </Route>

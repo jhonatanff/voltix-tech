@@ -48,8 +48,8 @@ export default function OrderHistoryPage() {
               <div className="order-history-card" key={order.id}>
                 <div className="order-history-header">
                   <span>Pedido #{order.id}</span>
-                  <span className={`order-status-badge order-status-${order.status}`}>{statusLabel(order.status)}</span>
                   <span>{new Date(order.createdAt).toLocaleDateString('es-CO')}</span>
+                  <span className={`order-status-badge order-status-${order.status}`}>{statusLabel(order.status)}</span>
                 </div>
                 <ul className="order-history-items">
                   {order.items.map((item, i) => (
@@ -58,6 +58,11 @@ export default function OrderHistoryPage() {
                     </li>
                   ))}
                 </ul>
+                {order.adminNote && (
+                  <div className="order-history-note">
+                    <strong>Nota:</strong> {order.adminNote}
+                  </div>
+                )}
                 <div className="order-history-footer">
                   <span>Pago: {paymentLabel(order.paymentMethod)}</span>
                   <span className="order-history-total">Total: {formatPrice(order.total)}</span>

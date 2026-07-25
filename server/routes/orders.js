@@ -153,4 +153,21 @@ router.patch('/:id/status', requireAdmin, async (req, res) => {
   res.json(toOrder(rows[0], itemRows));
 });
 
+// PATCH /api/orders/:id/note — admin. Agrega o edita la nota interna del pedido.
+router.patch('/:id/note', requireAdmin, async (req, res) => {
+  const { note } = req.body || {};
+  if (typeof note !== 'string') {
+    return res.status(400).json({ error: 'La nota debe ser un texto.' });
+  }
+
+  const { rows } = await pool.query(
+    'UPDATE orders SET admin_note = $1 WHERE id = $2 RETURNING *',
+    [note.trim() || null, req.params.id]
+  );
+  if (rows.length === 0) return res.status(404).json({ error: 'Pedido no encontrado.' });
+
+  const { rows: itemRows } = await pool.query('SELECT * FROM order_items WHERE order_id = $1', [req.params.id]);
+  res.json(toOrder(rows[0], itemRows));
+});
+
 export default router;

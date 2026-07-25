@@ -7,7 +7,7 @@ const STORAGE_KEY = 'voltix_admin_sidebar_collapsed';
 const NAV_ITEMS = [
   { to: '/admin/productos', icon: '📦', label: 'Productos', id: 'admin-nav-productos' },
   { to: '/admin/ventas', icon: '📈', label: 'Ventas', id: 'admin-nav-ventas' },
-  { to: '/admin/reportes', icon: '📋', label: 'Reportes', id: 'admin-nav-reportes' },
+  { to: '/admin/ordenes', icon: '📋', label: 'Órdenes', id: 'admin-nav-ordenes' },
   { to: '/admin/papelera', icon: '🗑️', label: 'Papelera', id: 'admin-nav-papelera' },
   { to: '/admin/usuarios', icon: '👤', label: 'Usuarios', id: 'admin-nav-usuarios' },
 ];

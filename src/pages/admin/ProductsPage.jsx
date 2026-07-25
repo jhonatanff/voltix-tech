@@ -49,7 +49,7 @@ export default function ProductsPage({ onProductsChanged }) {
   const categoryLabel = (id) => CATEGORIES.find((c) => c.id === id)?.label || id;
 
   return (
-    <div>
+    <div className="admin-wide-page">
       <div className="admin-page-header">
         <h1>Productos</h1>
         <button className="btn btn-primary btn-sm" onClick={() => setShowCreateForm(true)} id="new-product-btn">

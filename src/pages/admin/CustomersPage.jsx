@@ -44,7 +44,7 @@ export default function CustomersPage() {
   };
 
   return (
-    <div>
+    <div className="admin-wide-page">
       <div className="admin-page-header">
         <h1>Usuarios</h1>
         <button className="btn btn-primary btn-sm" onClick={() => setShowCreateForm(true)} id="new-customer-btn">

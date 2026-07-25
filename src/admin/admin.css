@@ -146,6 +146,12 @@
   max-width: 1100px;
 }
 
+/* Páginas con tablas anchas (Órdenes, Productos) — les damos todo el ancho
+   disponible en vez del máximo angosto que usan las páginas con formularios. */
+.admin-content:has(.admin-wide-page) {
+  max-width: none;
+}
+
 .admin-page-header {
   display: flex;
   align-items: center;
@@ -196,6 +202,11 @@
   padding: var(--space-md);
   border-bottom: 1px solid var(--border-primary);
   vertical-align: middle;
+}
+
+/* Evita que un correo largo (sin espacios) fuerce scroll horizontal en la tabla de Órdenes. */
+.orders-table td {
+  overflow-wrap: anywhere;
 }
 
 .admin-table tr:last-child td {

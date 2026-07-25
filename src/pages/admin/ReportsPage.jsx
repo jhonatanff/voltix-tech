@@ -7,6 +7,56 @@ function toDateInputValue(date) {
   return date.toISOString().slice(0, 10);
 }
 
+function OrderNoteModal({ order, onClose, onSaved }) {
+  const [note, setNote] = useState(order.adminNote || '');
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleSave = async () => {
+    setSaving(true);
+    setError('');
+    try {
+      const updated = await adminFetchJSON(`/api/orders/${order.id}/note`, { method: 'PATCH', body: { note } });
+      onSaved(updated);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="modal-overlay open" onClick={(e) => e.target === e.currentTarget && onClose()}>
+      <div className="modal" id="order-note-modal">
+        <div className="modal-header">
+          <h2>Nota del pedido #{order.id}</h2>
+          <button className="cart-close-btn" onClick={onClose} id="order-note-close-btn" type="button">×</button>
+        </div>
+        <div className="modal-body">
+          <div className="form-group">
+            <label className="form-label" htmlFor="order-note-textarea">
+              Nota interna (el cliente la ve en su historial de pedidos)
+            </label>
+            <textarea
+              id="order-note-textarea"
+              className="form-input admin-textarea"
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              placeholder="Ej: Pago confirmado, en camino con Envía, guía #123..."
+            />
+          </div>
+          {error && <div className="form-error">{error}</div>}
+        </div>
+        <div className="modal-footer">
+          <button className="btn btn-primary" onClick={handleSave} disabled={saving} id="order-note-save-btn" type="button">
+            {saving ? 'Guardando...' : 'Guardar nota'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function ReportsPage() {
   const today = new Date();
   const thirtyDaysAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
@@ -16,6 +66,7 @@ export default function ReportsPage() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [noteOrder, setNoteOrder] = useState(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -54,6 +105,7 @@ export default function ReportsPage() {
       { label: 'Total', value: (o) => o.total },
       { label: 'Método de pago', value: (o) => paymentLabel(o.paymentMethod) },
       { label: 'Estado', value: (o) => statusLabel(o.status) },
+      { label: 'Nota', value: (o) => o.adminNote || '' },
       { label: 'Dirección', value: (o) => o.shippingAddress },
     ]);
     downloadCSV(`pedidos_${from}_a_${to}.csv`, csv);
@@ -71,9 +123,9 @@ export default function ReportsPage() {
   };
 
   return (
-    <div>
+    <div className="admin-wide-page">
       <div className="admin-page-header">
-        <h1>Reportes</h1>
+        <h1>Órdenes</h1>
         <button className="btn btn-secondary btn-sm" onClick={handleExport} disabled={orders.length === 0} id="export-csv-btn">
           Exportar CSV
         </button>
@@ -96,7 +148,7 @@ export default function ReportsPage() {
         <p className="catalog-status">Cargando...</p>
       ) : (
         <div className="admin-table-wrap">
-          <table className="admin-table">
+          <table className="admin-table orders-table">
             <thead>
               <tr>
                 <th>#</th>
@@ -107,6 +159,7 @@ export default function ReportsPage() {
                 <th>Total</th>
                 <th>Pago</th>
                 <th>Estado</th>
+                <th>Nota</th>
               </tr>
             </thead>
             <tbody>
@@ -131,12 +184,33 @@ export default function ReportsPage() {
                       ))}
                     </select>
                   </td>
+                  <td>
+                    <button
+                      className="btn btn-secondary btn-sm"
+                      onClick={() => setNoteOrder(o)}
+                      id={`order-note-btn-${o.id}`}
+                      type="button"
+                    >
+                      {o.adminNote ? 'Ver nota' : '+ Nota'}
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
           {orders.length === 0 && <p className="catalog-status">No hay pedidos en este rango de fechas.</p>}
         </div>
+      )}
+
+      {noteOrder && (
+        <OrderNoteModal
+          order={noteOrder}
+          onClose={() => setNoteOrder(null)}
+          onSaved={(updated) => {
+            setOrders((prev) => prev.map((o) => (o.id === updated.id ? { ...o, adminNote: updated.adminNote } : o)));
+            setNoteOrder(null);
+          }}
+        />
       )}
     </div>
   );
