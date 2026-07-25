@@ -1,11 +1,10 @@
 // ========================================
 // Voltix Tech — Main Application
 // ========================================
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, lazy, Suspense } from 'react';
 import { Routes, Route, Link, useParams, useLocation } from 'react-router-dom';
 // useNavigate: solo se usaba para el gate de login en checkout (deshabilitado)
 import {
-  PRODUCTS,
   CATEGORIES,
   LOCAL_CITIES,
   NATIONAL_CARRIERS,
@@ -15,12 +14,15 @@ import {
   buildWhatsAppMessage,
   getWhatsAppURL,
 } from './config';
+import { useProducts } from './hooks/useProducts';
 // Auth deshabilitada temporalmente (requerimiento de login en checkout en pausa)
 // import { useAuth } from './auth/AuthContext';
 // import LoginPage from './pages/LoginPage';
 // import RegisterPage from './pages/RegisterPage';
 import voltixLogo from './assets/voltix_logo.webp';
 import './index.css';
+
+const AdminApp = lazy(() => import('./admin/AdminApp.jsx'));
 
 // ---- SVG Icon Components ----
 function IconCart() {
@@ -219,7 +221,7 @@ function ProductCard({ product, onAddToCart }) {
       : '';
 
   const categoryLabel = CATEGORIES.find((c) => c.id === product.category)?.label || product.category;
-  const outOfStock = product.inStock === false;
+  const outOfStock = product.stock <= 0;
 
   return (
     <Link to={`/producto/${product.id}`} className={`product-card ${outOfStock ? 'out-of-stock' : ''}`} id={`product-${product.id}`}>
@@ -300,6 +302,17 @@ function ProductGallery({ images, name }) {
   );
 }
 
+// ---- Product Detail Skeleton (mientras carga el catálogo) ----
+function ProductDetailSkeleton() {
+  return (
+    <section className="product-detail-section">
+      <div className="container product-not-found">
+        <p>Cargando producto...</p>
+      </div>
+    </section>
+  );
+}
+
 // ---- Product Not Found ----
 function ProductNotFound() {
   return (
@@ -316,9 +329,9 @@ function ProductNotFound() {
 }
 
 // ---- Product Detail Page ----
-function ProductDetailPage({ onAddToCart }) {
+function ProductDetailPage({ products, productsLoading, onAddToCart }) {
   const { id } = useParams();
-  const product = PRODUCTS.find((p) => p.id === id);
+  const product = products.find((p) => p.id === id);
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
   const timerRef = useRef(null);
@@ -343,17 +356,19 @@ function ProductDetailPage({ onAddToCart }) {
     };
   }, [product]);
 
-  if (!product) return <ProductNotFound />;
+  if (!product) {
+    return productsLoading ? <ProductDetailSkeleton /> : <ProductNotFound />;
+  }
 
   const categoryLabel = CATEGORIES.find((c) => c.id === product.category)?.label || product.category;
   const badgeClass =
     product.badge === 'Oferta' ? 'badge-orange' : product.badge === 'Nuevo' ? 'badge-green' : '';
   const images = product.images && product.images.length > 0 ? product.images : [product.image];
-  const outOfStock = product.inStock === false;
+  const outOfStock = product.stock <= 0;
 
   const relatedProducts = [
-    ...PRODUCTS.filter((p) => p.id !== product.id && p.category === product.category),
-    ...PRODUCTS.filter((p) => p.id !== product.id && p.category !== product.category),
+    ...products.filter((p) => p.id !== product.id && p.category === product.category),
+    ...products.filter((p) => p.id !== product.id && p.category !== product.category),
   ].slice(0, 3);
 
   const handleAdd = () => {
@@ -566,7 +581,7 @@ function CartDrawer({ open, cart, subtotal, onClose, onUpdateQty, onRemove, onCh
 }
 
 // ---- Checkout Modal ----
-function CheckoutModal({ open, cart, subtotal, onClose }) {
+function CheckoutModal({ open, cart, subtotal, onClose, onOrderComplete }) {
   const [shippingType, setShippingType] = useState('local');
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
@@ -576,6 +591,8 @@ function CheckoutModal({ open, cart, subtotal, onClose }) {
   const [paymentMethod, setPaymentMethod] = useState(PAYMENT_METHODS[0].id);
   const [notes, setNotes] = useState('');
   const [errors, setErrors] = useState({});
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState('');
 
   const shippingCost = shippingType === 'local' ? SHIPPING_COSTS.local : SHIPPING_COSTS.national;
   const total = subtotal + shippingCost;
@@ -606,24 +623,60 @@ function CheckoutModal({ open, cart, subtotal, onClose }) {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setSubmitError('');
     if (!validate()) return;
 
-    const message = buildWhatsAppMessage(
-      cart,
-      { name, phone, notes },
-      {
-        type: shippingType,
-        city: shippingType === 'local' ? city : null,
-        carrier: shippingType === 'national' ? carrier : null,
-        address,
-      },
-      paymentMethod
-    );
+    setSubmitting(true);
+    try {
+      const res = await fetch('/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          items: cart.map((item) => ({ productId: item.id, quantity: item.quantity })),
+          customerName: name,
+          customerPhone: phone,
+          shippingType,
+          shippingCity: shippingType === 'local' ? city : null,
+          shippingCarrier: shippingType === 'national' ? carrier : null,
+          shippingAddress: address,
+          paymentMethod,
+          notes,
+        }),
+      });
 
-    const url = getWhatsAppURL(message);
-    window.open(url, '_blank');
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        if (data.error === 'insufficient_stock') {
+          const item = cart.find((i) => i.id === data.productId);
+          setSubmitError(`"${item?.shortName || 'Un producto'}" ya no tiene stock suficiente. Actualiza tu carrito.`);
+        } else {
+          setSubmitError(data.error || 'No pudimos procesar tu pedido. Intenta de nuevo.');
+        }
+        return;
+      }
+
+      const message = buildWhatsAppMessage(
+        data,
+        { name, phone, notes },
+        {
+          type: shippingType,
+          city: shippingType === 'local' ? city : null,
+          carrier: shippingType === 'national' ? carrier : null,
+          address,
+        }
+      );
+
+      window.open(getWhatsAppURL(message), '_blank');
+      onOrderComplete?.();
+      onClose();
+    } catch {
+      setSubmitError('No pudimos conectar con el servidor. Verifica tu conexión e intenta de nuevo.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   if (!open) return null;
@@ -796,9 +849,10 @@ function CheckoutModal({ open, cart, subtotal, onClose }) {
           </div>
 
           <div className="modal-footer">
-            <button className="btn btn-whatsapp" type="submit" id="send-whatsapp-btn">
+            {submitError && <div className="form-error submit-error">{submitError}</div>}
+            <button className="btn btn-whatsapp" type="submit" id="send-whatsapp-btn" disabled={submitting}>
               <IconWhatsApp />
-              Enviar Pedido por WhatsApp
+              {submitting ? 'Enviando pedido...' : 'Enviar Pedido por WhatsApp'}
             </button>
           </div>
         </form>
@@ -865,13 +919,13 @@ function Footer() {
 }
 
 // ---- Home Page ----
-function HomePage({ onAddToCart }) {
+function HomePage({ products, productsLoading, productsError, onAddToCart }) {
   const [activeCategory, setActiveCategory] = useState('todos');
 
   const filteredProducts =
     activeCategory === 'todos'
-      ? PRODUCTS
-      : PRODUCTS.filter((p) => p.category === activeCategory);
+      ? products
+      : products.filter((p) => p.category === activeCategory);
 
   const scrollToCatalog = () => {
     document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' });
@@ -905,11 +959,17 @@ function HomePage({ onAddToCart }) {
             ))}
           </div>
 
-          <div className="products-grid">
-            {filteredProducts.map((product) => (
-              <ProductCard key={product.id} product={product} onAddToCart={onAddToCart} />
-            ))}
-          </div>
+          {productsError ? (
+            <p className="catalog-status catalog-status-error">{productsError}</p>
+          ) : productsLoading ? (
+            <p className="catalog-status">Cargando catálogo...</p>
+          ) : (
+            <div className="products-grid">
+              {filteredProducts.map((product) => (
+                <ProductCard key={product.id} product={product} onAddToCart={onAddToCart} />
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
@@ -926,6 +986,8 @@ export default function App() {
   // const { user, isAuthenticated, logout } = useAuth();
   // const navigate = useNavigate();
   // const location = useLocation();
+
+  const { products, loading: productsLoading, error: productsError, reload: reloadProducts } = useProducts();
 
   const [cart, setCart] = useState([]);
   const [cartOpen, setCartOpen] = useState(false);
@@ -998,42 +1060,76 @@ export default function App() {
   //   // eslint-disable-next-line react-hooks/exhaustive-deps
   // }, [location.state]);
 
+  const isAdminRoute = useLocation().pathname.startsWith('/admin');
+
   return (
     <>
       <ScrollToTop />
-      <Navbar cartCount={cartCount} onCartClick={() => setCartOpen(true)} />
+      {!isAdminRoute && <Navbar cartCount={cartCount} onCartClick={() => setCartOpen(true)} />}
 
       <Routes>
-        <Route path="/" element={<HomePage onAddToCart={addToCart} />} />
-        <Route path="/producto/:id" element={<ProductDetailPage onAddToCart={addToCart} />} />
+        <Route
+          path="/"
+          element={
+            <HomePage
+              products={products}
+              productsLoading={productsLoading}
+              productsError={productsError}
+              onAddToCart={addToCart}
+            />
+          }
+        />
+        <Route
+          path="/producto/:id"
+          element={
+            <ProductDetailPage
+              products={products}
+              productsLoading={productsLoading}
+              onAddToCart={addToCart}
+            />
+          }
+        />
         {/* Rutas de auth deshabilitadas temporalmente
         <Route path="/login" element={<LoginPage />} />
         <Route path="/registro" element={<RegisterPage />} />
         */}
+        <Route
+          path="/admin/*"
+          element={
+            <Suspense fallback={<div className="admin-loading">Cargando panel...</div>}>
+              <AdminApp onProductsChanged={reloadProducts} />
+            </Suspense>
+          }
+        />
         <Route path="*" element={<ProductNotFound />} />
       </Routes>
 
-      <Footer />
+      {!isAdminRoute && (
+        <>
+          <Footer />
 
-      {/* Drawers & Modals */}
-      <CartDrawer
-        open={cartOpen}
-        cart={cart}
-        subtotal={subtotal}
-        onClose={() => setCartOpen(false)}
-        onUpdateQty={updateQty}
-        onRemove={removeFromCart}
-        onCheckout={handleCheckout}
-      />
+          {/* Drawers & Modals */}
+          <CartDrawer
+            open={cartOpen}
+            cart={cart}
+            subtotal={subtotal}
+            onClose={() => setCartOpen(false)}
+            onUpdateQty={updateQty}
+            onRemove={removeFromCart}
+            onCheckout={handleCheckout}
+          />
 
-      <CheckoutModal
-        open={checkoutOpen}
-        cart={cart}
-        subtotal={subtotal}
-        onClose={() => setCheckoutOpen(false)}
-      />
+          <CheckoutModal
+            open={checkoutOpen}
+            cart={cart}
+            subtotal={subtotal}
+            onClose={() => setCheckoutOpen(false)}
+            onOrderComplete={() => setCart([])}
+          />
 
-      <Toast message={toastMsg} show={toastShow} />
+          <Toast message={toastMsg} show={toastShow} />
+        </>
+      )}
     </>
   );
 }

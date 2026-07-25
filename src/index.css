@@ -1456,6 +1456,36 @@ a.account-pill:hover {
   margin-top: 4px;
 }
 
+.submit-error {
+  margin-bottom: var(--space-md);
+  text-align: center;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.catalog-status {
+  text-align: center;
+  padding: var(--space-2xl) 0;
+  color: var(--text-secondary);
+}
+
+.catalog-status-error {
+  color: var(--accent-red);
+}
+
+.admin-loading {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+}
+
 /* ---- FEATURES / BENEFITS ---- */
 .features-section {
   padding: var(--space-3xl) 0;
