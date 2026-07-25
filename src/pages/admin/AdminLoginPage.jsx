@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { useAdminAuth } from '../../admin/AdminAuthContext.jsx';
 
 export default function AdminLoginPage() {
@@ -29,6 +29,12 @@ export default function AdminLoginPage() {
   return (
     <section className="auth-section admin-login-section">
       <div className="container">
+        <div className="auth-back-wrap">
+          <Link to="/" className="back-link" id="admin-back-to-site">
+            ← Volver al sitio
+          </Link>
+        </div>
+
         <div className="auth-card">
           <h1 className="auth-title">Panel de administración</h1>
           <p className="auth-subtitle">Acceso exclusivo para el administrador de Voltix Tech.</p>

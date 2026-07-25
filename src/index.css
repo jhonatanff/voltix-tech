@@ -1020,6 +1020,12 @@ a.account-pill:hover {
   box-shadow: var(--shadow-lg);
 }
 
+.auth-back-wrap {
+  width: 100%;
+  max-width: 440px;
+  margin: 0 auto var(--space-md);
+}
+
 .auth-title {
   font-family: var(--font-display);
   font-size: 1.7rem;

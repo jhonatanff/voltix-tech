@@ -187,9 +187,6 @@ function Hero({ onCatalogClick }) {
           <a href="#features" className="btn btn-secondary" id="hero-cta-benefits">
             ✨ Nuestros Beneficios
           </a>
-          <a href="https://voltix-tech.vercel.app/admin/login" className="btn btn-secondary" id="hero-cta-admin">
-            ✨ Login AdminApp
-          </a>
         </div>
       </div>
     </section>
@@ -914,6 +911,7 @@ function Footer() {
             <Link to="/#hero" className="footer-link">Inicio</Link>
             <Link to="/#catalog" className="footer-link">Catálogo</Link>
             <Link to="/#features" className="footer-link">Beneficios</Link>
+            <Link to="/admin/login" className="footer-link" id="footer-admin-link">Admin</Link>
           </div>
         </div>
       </div>
