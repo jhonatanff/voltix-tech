@@ -86,9 +86,11 @@ async function main() {
       shipping_cost INTEGER NOT NULL,
       total INTEGER NOT NULL,
       created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-      customer_id INTEGER REFERENCES customers(id) ON DELETE SET NULL
+      customer_id INTEGER REFERENCES customers(id) ON DELETE SET NULL,
+      status TEXT NOT NULL DEFAULT 'pendiente'
     );
     ALTER TABLE orders ADD COLUMN IF NOT EXISTS customer_id INTEGER REFERENCES customers(id) ON DELETE SET NULL;
+    ALTER TABLE orders ADD COLUMN IF NOT EXISTS status TEXT NOT NULL DEFAULT 'pendiente';
     CREATE INDEX IF NOT EXISTS orders_created_at_idx ON orders (created_at);
     CREATE INDEX IF NOT EXISTS orders_customer_id_idx ON orders (customer_id);
     CREATE TABLE IF NOT EXISTS order_items (

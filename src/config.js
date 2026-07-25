@@ -2,8 +2,8 @@
 // Voltix Tech - Configuración Central
 // ========================================
 
-import { CATEGORIES, SHIPPING_COSTS, PAYMENT_METHODS } from '../shared/constants.js';
-export { CATEGORIES, SHIPPING_COSTS, PAYMENT_METHODS };
+import { CATEGORIES, SHIPPING_COSTS, PAYMENT_METHODS, ORDER_STATUSES } from '../shared/constants.js';
+export { CATEGORIES, SHIPPING_COSTS, PAYMENT_METHODS, ORDER_STATUSES };
 
 // Número de WhatsApp del comercio (formato internacional sin +)
 export const WHATSAPP_NUMBER = '573226590659';

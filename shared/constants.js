@@ -28,3 +28,14 @@ export const PAYMENT_METHODS = [
 ];
 
 export const PAYMENT_METHOD_IDS = PAYMENT_METHODS.map((m) => m.id);
+
+// Estados posibles de un pedido, en el orden en que normalmente avanzan
+export const ORDER_STATUSES = [
+  { id: 'pendiente', label: 'Pendiente' },
+  { id: 'confirmado', label: 'Confirmado' },
+  { id: 'enviado', label: 'Enviado' },
+  { id: 'entregado', label: 'Entregado' },
+  { id: 'cancelado', label: 'Cancelado' },
+];
+
+export const ORDER_STATUS_IDS = ORDER_STATUSES.map((s) => s.id);

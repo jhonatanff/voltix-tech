@@ -276,12 +276,29 @@ a.account-pill:hover,
 
 .order-history-header {
   display: flex;
+  align-items: center;
   justify-content: space-between;
+  gap: var(--space-sm);
   font-weight: 600;
   margin-bottom: var(--space-md);
   padding-bottom: var(--space-sm);
   border-bottom: 1px solid var(--border-primary);
 }
+
+.order-status-badge {
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  font-size: 0.78rem;
+  font-weight: 600;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+
+.order-status-badge.order-status-pendiente { color: var(--accent-orange); background: rgba(245, 158, 11, 0.12); border-color: rgba(245, 158, 11, 0.3); }
+.order-status-badge.order-status-confirmado { color: var(--accent-secondary-light); background: rgba(6, 182, 212, 0.12); border-color: rgba(6, 182, 212, 0.3); }
+.order-status-badge.order-status-enviado { color: var(--accent-primary-light); background: rgba(124, 58, 237, 0.12); border-color: rgba(124, 58, 237, 0.3); }
+.order-status-badge.order-status-entregado { color: var(--accent-green-light); background: rgba(16, 185, 129, 0.12); border-color: rgba(16, 185, 129, 0.3); }
+.order-status-badge.order-status-cancelado { color: var(--accent-red); background: rgba(239, 68, 68, 0.12); border-color: rgba(239, 68, 68, 0.3); }
 
 .order-history-items {
   list-style: none;

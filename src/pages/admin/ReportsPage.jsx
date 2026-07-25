@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { formatPrice, PAYMENT_METHODS } from '../../config';
-import { adminFetch } from '../../admin/api.js';
+import { formatPrice, PAYMENT_METHODS, ORDER_STATUSES } from '../../config';
+import { adminFetch, adminFetchJSON } from '../../admin/api.js';
 import { toCSV, downloadCSV } from '../../admin/csv.js';
 
 function toDateInputValue(date) {
@@ -39,6 +39,7 @@ export default function ReportsPage() {
   }, [load]);
 
   const paymentLabel = (id) => PAYMENT_METHODS.find((m) => m.id === id)?.label || id;
+  const statusLabel = (id) => ORDER_STATUSES.find((s) => s.id === id)?.label || id;
 
   const handleExport = () => {
     const csv = toCSV(orders, [
@@ -51,9 +52,21 @@ export default function ReportsPage() {
       { label: 'Envío', value: (o) => o.shippingCost },
       { label: 'Total', value: (o) => o.total },
       { label: 'Método de pago', value: (o) => paymentLabel(o.paymentMethod) },
+      { label: 'Estado', value: (o) => statusLabel(o.status) },
       { label: 'Dirección', value: (o) => o.shippingAddress },
     ]);
     downloadCSV(`pedidos_${from}_a_${to}.csv`, csv);
+  };
+
+  const handleStatusChange = async (orderId, status) => {
+    const previous = orders;
+    setOrders((prev) => prev.map((o) => (o.id === orderId ? { ...o, status } : o)));
+    try {
+      await adminFetchJSON(`/api/orders/${orderId}/status`, { method: 'PATCH', body: { status } });
+    } catch (err) {
+      setOrders(previous);
+      alert(err.message);
+    }
   };
 
   return (
@@ -91,6 +104,7 @@ export default function ReportsPage() {
                 <th>Productos</th>
                 <th>Total</th>
                 <th>Pago</th>
+                <th>Estado</th>
               </tr>
             </thead>
             <tbody>
@@ -102,6 +116,18 @@ export default function ReportsPage() {
                   <td>{o.items.map((i) => `${i.productName} x${i.quantity}`).join(', ')}</td>
                   <td>{formatPrice(o.total)}</td>
                   <td>{paymentLabel(o.paymentMethod)}</td>
+                  <td>
+                    <select
+                      className={`order-status-select order-status-${o.status}`}
+                      value={o.status}
+                      onChange={(e) => handleStatusChange(o.id, e.target.value)}
+                      id={`order-status-${o.id}`}
+                    >
+                      {ORDER_STATUSES.map((s) => (
+                        <option key={s.id} value={s.id}>{s.label}</option>
+                      ))}
+                    </select>
+                  </td>
                 </tr>
               ))}
             </tbody>

@@ -4,7 +4,7 @@ import { requireAdmin } from '../lib/adminAuth.js';
 import { attachCustomerIfPresent } from '../lib/customerAuth.js';
 import { notifyNewOrder } from '../lib/notify.js';
 import { toOrder, fetchOrdersWithItems } from '../lib/orderSerializer.js';
-import { SHIPPING_COSTS, PAYMENT_METHOD_IDS } from '../../shared/constants.js';
+import { SHIPPING_COSTS, PAYMENT_METHOD_IDS, ORDER_STATUS_IDS } from '../../shared/constants.js';
 
 const router = Router();
 
@@ -130,6 +130,23 @@ router.get('/', requireAdmin, async (req, res) => {
 
   const where = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
   res.json(await fetchOrdersWithItems(pool, where, params));
+});
+
+// PATCH /api/orders/:id/status — admin. Cambia el estado de un pedido.
+router.patch('/:id/status', requireAdmin, async (req, res) => {
+  const { status } = req.body || {};
+  if (!ORDER_STATUS_IDS.includes(status)) {
+    return res.status(400).json({ error: 'Estado inválido.' });
+  }
+
+  const { rows } = await pool.query(
+    'UPDATE orders SET status = $1 WHERE id = $2 RETURNING *',
+    [status, req.params.id]
+  );
+  if (rows.length === 0) return res.status(404).json({ error: 'Pedido no encontrado.' });
+
+  const { rows: itemRows } = await pool.query('SELECT * FROM order_items WHERE order_id = $1', [req.params.id]);
+  res.json(toOrder(rows[0], itemRows));
 });
 
 export default router;

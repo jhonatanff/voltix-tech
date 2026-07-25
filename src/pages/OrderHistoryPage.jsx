@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { formatPrice, PAYMENT_METHODS } from '../config';
+import { formatPrice, PAYMENT_METHODS, ORDER_STATUSES } from '../config';
 import { useAuth } from '../auth/AuthContext';
 
 export default function OrderHistoryPage() {
@@ -29,6 +29,7 @@ export default function OrderHistoryPage() {
   }, [load]);
 
   const paymentLabel = (id) => PAYMENT_METHODS.find((m) => m.id === id)?.label || id;
+  const statusLabel = (id) => ORDER_STATUSES.find((s) => s.id === id)?.label || id;
 
   return (
     <section className="product-detail-section">
@@ -47,6 +48,7 @@ export default function OrderHistoryPage() {
               <div className="order-history-card" key={order.id}>
                 <div className="order-history-header">
                   <span>Pedido #{order.id}</span>
+                  <span className={`order-status-badge order-status-${order.status}`}>{statusLabel(order.status)}</span>
                   <span>{new Date(order.createdAt).toLocaleDateString('es-CO')}</span>
                 </div>
                 <ul className="order-history-items">

@@ -12,6 +12,7 @@ export function toOrder(orderRow, itemRows) {
     subtotal: orderRow.subtotal,
     shippingCost: orderRow.shipping_cost,
     total: orderRow.total,
+    status: orderRow.status,
     createdAt: orderRow.created_at,
     items: itemRows.map((i) => ({
       productId: i.product_id,
