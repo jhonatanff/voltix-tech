@@ -647,6 +647,21 @@ a.account-pill:hover {
   box-shadow: 0 2px 10px rgba(245, 158, 11, 0.35);
 }
 
+.product-badge.badge-gray {
+  background: linear-gradient(135deg, #52525b, #3f3f46);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
+}
+
+.product-card.out-of-stock .product-card-image img {
+  opacity: 0.45;
+  filter: grayscale(0.4);
+}
+
+.product-card.out-of-stock:hover {
+  transform: none;
+  box-shadow: none;
+}
+
 .product-card-body {
   padding: var(--space-lg);
   flex: 1;
@@ -748,6 +763,17 @@ a.account-pill:hover {
 .add-to-cart-btn.added {
   background: linear-gradient(135deg, #10b981, #059669);
   box-shadow: 0 2px 12px rgba(16, 185, 129, 0.25);
+}
+
+.add-to-cart-btn:disabled {
+  background: var(--bg-tertiary);
+  color: var(--text-muted);
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+.add-to-cart-btn:disabled:hover {
+  transform: none;
 }
 
 /* ---- PRODUCT DETAIL PAGE ---- */
@@ -957,6 +983,20 @@ a.account-pill:hover {
 
 .product-not-found p {
   color: var(--text-secondary);
+  margin-bottom: var(--space-xl);
+}
+
+/* ---- Related Products ---- */
+.related-products {
+  margin-top: var(--space-3xl);
+  padding-top: var(--space-2xl);
+  border-top: 1px solid var(--border-primary);
+}
+
+.related-products-title {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 800;
   margin-bottom: var(--space-xl);
 }
 

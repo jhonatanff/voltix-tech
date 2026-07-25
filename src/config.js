@@ -36,6 +36,7 @@ export const PRODUCTS = [
     image: airpodsBundleImg,
     images: [airpodsBundleImg, airpodsProImg, cargadorImg],
     badge: 'Más vendido',
+    inStock: true,
     features: ['ANC', 'MagSafe', 'Cable + Cargador', 'Envío Gratis'],
     specs: [
       { label: 'Modelo', value: 'AirPods Pro 2da Generación' },
@@ -66,6 +67,7 @@ export const PRODUCTS = [
     image: airpodsProImg,
     images: [airpodsProImg, airpodsBundleImg],
     badge: 'Premium',
+    inStock: true,
     features: ['Bluetooth 5.3', 'ANC', 'Audio Espacial', 'USB-C'],
     specs: [
       { label: 'Modelo', value: 'AirPods Pro 2da Generación' },
@@ -96,6 +98,7 @@ export const PRODUCTS = [
     image: cargadorImg,
     images: [cargadorImg],
     badge: 'Nuevo',
+    inStock: true,
     features: ['GaN III', '65W', 'PD 3.0', 'Compacto'],
     specs: [
       { label: 'Tecnología', value: 'GaN III (Nitruro de Galio)' },
@@ -126,6 +129,7 @@ export const PRODUCTS = [
     image: cargadorImg,
     images: [cargadorImg],
     badge: 'Oferta',
+    inStock: false,
     features: ['20W', 'USB-C', 'Original', 'Compacto'],
     specs: [
       { label: 'Potencia', value: '20W' },
@@ -156,6 +160,7 @@ export const PRODUCTS = [
     image: diademaImg,
     images: [diademaImg],
     badge: null,
+    inStock: true,
     features: ['7.1 Virtual', '50mm Driver', 'Mic ANC', 'Memory Foam'],
     specs: [
       { label: 'Tipo', value: 'Over-ear cerrado' },
@@ -186,6 +191,7 @@ export const PRODUCTS = [
     image: diademaImg,
     images: [diademaImg],
     badge: null,
+    inStock: true,
     features: ['USB-C', 'Plug & Play', 'Echo Cancel', 'Ultraligera'],
     specs: [
       { label: 'Tipo', value: 'On-ear ligero' },

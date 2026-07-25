@@ -219,12 +219,15 @@ function ProductCard({ product, onAddToCart }) {
       : '';
 
   const categoryLabel = CATEGORIES.find((c) => c.id === product.category)?.label || product.category;
+  const outOfStock = product.inStock === false;
 
   return (
-    <Link to={`/producto/${product.id}`} className="product-card" id={`product-${product.id}`}>
+    <Link to={`/producto/${product.id}`} className={`product-card ${outOfStock ? 'out-of-stock' : ''}`} id={`product-${product.id}`}>
       <div className="product-card-image">
-        {product.badge && (
-          <span className={`product-badge ${badgeClass}`}>{product.badge}</span>
+        {outOfStock ? (
+          <span className="product-badge badge-gray">Agotado</span>
+        ) : (
+          product.badge && <span className={`product-badge ${badgeClass}`}>{product.badge}</span>
         )}
         <img src={product.image} alt={product.name} loading="lazy" />
       </div>
@@ -247,9 +250,12 @@ function ProductCard({ product, onAddToCart }) {
           <button
             className={`add-to-cart-btn ${added ? 'added' : ''}`}
             onClick={handleAdd}
+            disabled={outOfStock}
             id={`add-cart-${product.id}`}
           >
-            {added ? (
+            {outOfStock ? (
+              'Agotado'
+            ) : added ? (
               <>
                 <IconCheck /> Agregado
               </>
@@ -343,6 +349,12 @@ function ProductDetailPage({ onAddToCart }) {
   const badgeClass =
     product.badge === 'Oferta' ? 'badge-orange' : product.badge === 'Nuevo' ? 'badge-green' : '';
   const images = product.images && product.images.length > 0 ? product.images : [product.image];
+  const outOfStock = product.inStock === false;
+
+  const relatedProducts = [
+    ...PRODUCTS.filter((p) => p.id !== product.id && p.category === product.category),
+    ...PRODUCTS.filter((p) => p.id !== product.id && p.category !== product.category),
+  ].slice(0, 3);
 
   const handleAdd = () => {
     for (let i = 0; i < quantity; i++) onAddToCart(product);
@@ -365,8 +377,12 @@ function ProductDetailPage({ onAddToCart }) {
             <span className="product-card-category">{categoryLabel}</span>
             <h1 className="product-detail-name">{product.name}</h1>
 
-            {product.badge && (
-              <span className={`product-badge product-badge-static ${badgeClass}`}>{product.badge}</span>
+            {outOfStock ? (
+              <span className="product-badge product-badge-static badge-gray">Agotado</span>
+            ) : (
+              product.badge && (
+                <span className={`product-badge product-badge-static ${badgeClass}`}>{product.badge}</span>
+              )
             )}
 
             <p className="product-detail-desc">{product.longDescription || product.description}</p>
@@ -393,32 +409,37 @@ function ProductDetailPage({ onAddToCart }) {
                 )}
               </div>
 
-              <div className="qty-selector">
-                <button
-                  type="button"
-                  className="qty-btn"
-                  onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                  id="detail-qty-minus"
-                >
-                  <IconMinus />
-                </button>
-                <span className="cart-item-qty">{quantity}</span>
-                <button
-                  type="button"
-                  className="qty-btn"
-                  onClick={() => setQuantity((q) => q + 1)}
-                  id="detail-qty-plus"
-                >
-                  <IconPlus />
-                </button>
-              </div>
+              {!outOfStock && (
+                <div className="qty-selector">
+                  <button
+                    type="button"
+                    className="qty-btn"
+                    onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                    id="detail-qty-minus"
+                  >
+                    <IconMinus />
+                  </button>
+                  <span className="cart-item-qty">{quantity}</span>
+                  <button
+                    type="button"
+                    className="qty-btn"
+                    onClick={() => setQuantity((q) => q + 1)}
+                    id="detail-qty-plus"
+                  >
+                    <IconPlus />
+                  </button>
+                </div>
+              )}
 
               <button
                 className={`add-to-cart-btn btn-lg ${added ? 'added' : ''}`}
                 onClick={handleAdd}
+                disabled={outOfStock}
                 id={`detail-add-cart-${product.id}`}
               >
-                {added ? (
+                {outOfStock ? (
+                  'Agotado'
+                ) : added ? (
                   <>
                     <IconCheck /> Agregado al carrito
                   </>
@@ -445,6 +466,17 @@ function ProductDetailPage({ onAddToCart }) {
             )}
           </div>
         </div>
+
+        {relatedProducts.length > 0 && (
+          <div className="related-products">
+            <h2 className="related-products-title">También te puede interesar</h2>
+            <div className="products-grid">
+              {relatedProducts.map((related) => (
+                <ProductCard key={related.id} product={related} onAddToCart={onAddToCart} />
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </section>
   );
@@ -550,9 +582,26 @@ function CheckoutModal({ open, cart, subtotal, onClose }) {
 
   const validate = () => {
     const newErrors = {};
-    if (!name.trim()) newErrors.name = 'Ingresa tu nombre';
-    if (!phone.trim()) newErrors.phone = 'Ingresa tu teléfono';
-    if (!address.trim()) newErrors.address = 'Ingresa tu dirección';
+
+    if (!name.trim()) {
+      newErrors.name = 'Ingresa tu nombre';
+    } else if (name.trim().length < 3) {
+      newErrors.name = 'Ingresa tu nombre completo';
+    }
+
+    const phoneDigits = phone.replace(/\D/g, '');
+    if (!phone.trim()) {
+      newErrors.phone = 'Ingresa tu teléfono';
+    } else if (phoneDigits.length < 7 || phoneDigits.length > 10) {
+      newErrors.phone = 'Ingresa un teléfono válido (7 a 10 dígitos)';
+    }
+
+    if (!address.trim()) {
+      newErrors.address = 'Ingresa tu dirección';
+    } else if (address.trim().length < 5) {
+      newErrors.address = 'Ingresa una dirección más detallada';
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
